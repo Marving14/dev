@@ -22,8 +22,16 @@ let myChart = new Chart(ctx, {
       borderColor: 'rgba(75, 192, 192, 1)',
       borderWidth: 1
     }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
   }
 });
+
 
 // Function to update the chart
 function updateChart(data) {
