@@ -12,32 +12,38 @@ console.log("Map initialized.");
 
 // Initialize Chart
 let ctx = document.getElementById('myChart').getContext('2d');
-let myChart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['1998', '1999', '2000', /* ... */ '2020'],
-    datasets: [{
-      label: 'PM 2.5',
-      data: [],  // This will be populated later
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 1
-    }]
-  },
-  options: {
-    scales: {
-      y: {
-        beginAtZero: true
+let myChart;
+
+// Function to initialize the chart
+function initializeChart() {
+  myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020'],
+      datasets: [],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
       }
     }
-  }
-});
-
+  });
+}
 
 // Function to update the chart
-function updateChart(data) {
-  myChart.data.datasets[0].data = data;
+function updateChart(data, cityName) {
+  myChart.data.labels = Object.keys(data);
+  myChart.data.datasets = [{
+    label: `PM 2.5 for ${cityName}`,
+    data: Object.values(data),
+    borderColor: 'rgba(75, 192, 192, 1)',
+    borderWidth: 1
+  }];
   myChart.update();
 }
+
 
 // Listen for zoom events and log the current zoom level
 map.on('zoom', function() {
@@ -45,8 +51,13 @@ map.on('zoom', function() {
   console.log('Current Zoom Level:', zoomLevel);
 });
 
+let parsedData; // Define parsedData outside the map.on('load') callback
+
 map.on('load', function () {
   console.log("Map loaded.");
+
+  // Initialize chart with empty data
+  initializeChart();
 
   // Fetch GeoJSON data and add to map
   fetch('data/AFRICAPOLIS2020.geojson')
@@ -87,6 +98,35 @@ map.on('load', function () {
         'minzoom': 0,
         'maxzoom': 10
       });
+
+      // Store parsed data outside the callback
+      parsedData = Papa.parse(csvData, { header: true });
+      
+      // Event to update the chart when an urban area is clicked
+      map.on('click', 'urban-areas-polygon', function(e) {
+        console.log("Click event triggered");
+
+        let cityName = e.features[0].properties.agglosName;
+        console.log("Clicked on city:", cityName);
+
+        // Search for the city data in the parsed CSV data
+        let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
+
+        if (cityData) {
+          // Extract PM 2.5 data for the selected city
+          let cityPMData = {};
+          for (let year = 1998; year <= 2020; year++) {
+            cityPMData[year] = parseFloat(cityData[`X${year}`]) || 0;
+          }
+          console.log("Data for chart:", cityPMData);
+
+          // Update the chart with city-specific data
+          updateChart(cityPMData, cityName);
+        } else {
+          console.log("No data found for city:", cityName);
+        }
+      });
+
     })
     .catch(error => console.error('Error loading GeoJSON data:', error));
 
