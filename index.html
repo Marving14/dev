@@ -9,24 +9,26 @@
   <link rel="stylesheet" href="styles.css">
   <!-- Include PapaParse -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
-</head>
-<body>
-
-  <!-- Map Container -->
-  <div id="map"></div>
-
-  <!-- Chart Container -->
-  <canvas id="myChart"></canvas>
-
-  <!-- Include Mapbox JS -->
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
   <!-- Include Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Map Container -->
+    <div id="map" class="map"></div>
+  </div>
+  <!-- Chart Container -->
+  <div id="chart-container" class="chart-container">
+    <div id="chart-header">
+      <h2 id="city-name">PM 2.5 for CityName</h2>
+      <button id="reset-btn">Reset</button>
+      <p id="insights">Insights from the table</p>
+    </div>
+    <canvas id="myChart"></canvas>
+  </div>
+  <!-- Include Mapbox JS -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
   <!-- Include local JS -->
   <script src="main.js"></script>
-
 </body>
 </html>
