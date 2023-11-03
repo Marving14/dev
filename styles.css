@@ -28,7 +28,32 @@ html, body, div, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, address, c
   position: absolute;
   top: 20px;
   right: 20px;
-  width: 32%; /* Adjust the width to your preference */
-  height: 22%; /* Adjust the height to your preference */
+  max-width: 35%; /* Adjust the maximum width to your preference */
+  max-height: 38%; /* Adjust the maximum height to your preference */
   background-color: rgba(255, 255, 255, 0.9);
+  overflow: auto; /* Add scrollbars if content overflows */
+}
+
+#chart-header {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#city-name {
+  margin: 0;
+  font-size: 1.5em;
+}
+
+#insights {
+  margin: 0;
+  font-size: 1em;
+  color: #666;
+}
+
+/* Adjust font size for responsiveness */
+@media (max-width: 768px) {
+  .chart-container {
+    font-size: 0.8em; /* Adjust font size for smaller screens */
+  }
 }

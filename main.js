@@ -27,6 +27,14 @@ function initializeChart() {
         y: {
           beginAtZero: true
         }
+      },
+      plugins: {
+        legend: {
+          display: false // This will remove the legend
+        },
+        tooltip: {
+          enabled: false // This will remove the tooltip
+        }
       }
     }
   });
@@ -34,15 +42,25 @@ function initializeChart() {
 
 // Function to update the chart
 function updateChart(data, cityName) {
+  // Update city name and insights in the chart header
+  if (cityName) {
+    document.getElementById('city-name').textContent = `PM 2.5 for ${cityName}`;
+    document.getElementById('insights').textContent = `This map visualizes PM 2.5 air pollution levels in urban areas from 1998 to 2020.`;
+  } else {
+    document.getElementById('city-name').textContent = 'Average PM 2.5 for All Urban Areas';
+    document.getElementById('insights').textContent = 'This map visualizes PM 2.5 air pollution levels in urban areas from 1998 to 2020.';
+  }
+
+  // Update the chart data
   myChart.data.labels = Object.keys(data);
   myChart.data.datasets = [{
-    label: `PM 2.5 for ${cityName}`,
     data: Object.values(data),
     borderColor: 'rgba(75, 192, 192, 1)',
     borderWidth: 1
   }];
   myChart.update();
 }
+
 
 
 // Listen for zoom events and log the current zoom level
@@ -99,9 +117,7 @@ map.on('load', function () {
         'maxzoom': 10
       });
 
-      // Store parsed data outside the callback
-      parsedData = Papa.parse(csvData, { header: true });
-      
+            
       // Event to update the chart when an urban area is clicked
       map.on('click', 'urban-areas-polygon', function(e) {
         console.log("Click event triggered");
@@ -135,7 +151,7 @@ map.on('load', function () {
     .then(response => response.text())
     .then(csvData => {
       console.log("CSV data fetched.");
-      const parsedData = Papa.parse(csvData, { header: true });
+      parsedData = Papa.parse(csvData, { header: true });
       console.log("CSV data parsed:", parsedData.data);
 
       // Calculate average PM 2.5 for all years and all urban areas
