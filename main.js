@@ -71,7 +71,8 @@ function updateChart(data, cityName) {
   myChart.data.labels = Object.keys(data);
   myChart.data.datasets = [{
     data: values,
-    borderColor: 'rgba(75, 192, 192, 1)',
+    borderColor: '#FFA726', // Updated line color
+    backgroundColor: '#FF7043', // Updated point color
     borderWidth: 1
   }];
   myChart.options.scales.y.min = min;
@@ -116,8 +117,9 @@ map.on('load', function () {
         'source': 'urban-areas',
         'layout': {},
         'paint': {
-          'fill-color': '#088',
-          'fill-opacity': 0.8
+          'fill-color': '#4CAF50', // Updated fill color
+          'fill-opacity': 0.8,
+          'fill-outline-color': '#81C784' // Updated stroke color
         },
         'minzoom': 8,
         'maxzoom': 22
@@ -131,7 +133,7 @@ map.on('load', function () {
         'layout': {},
         'paint': {
           'circle-radius': 5,
-          'circle-color': '#f00'
+          'circle-color': '#FF7043' // Updated circle color
         },
         'minzoom': 0,
         'maxzoom': 10
