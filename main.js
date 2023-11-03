@@ -33,12 +33,21 @@ function initializeChart() {
           display: false // This will remove the legend
         },
         tooltip: {
-          enabled: false // This will remove the tooltip
+          enabled: true, // This will enable the tooltip
+          callbacks: {
+            title: function(tooltipItem) {
+              return `Year: ${tooltipItem[0].label}`;
+            },
+            label: function(tooltipItem) {
+              return `PM 2.5: ${tooltipItem.formattedValue}`;
+            }
+          }
         }
       }
     }
   });
 }
+
 
 // Function to update the chart
 function updateChart(data, cityName) {
@@ -52,13 +61,24 @@ function updateChart(data, cityName) {
   }
 
   // Update the chart data
+  const values = Object.values(data);
+  const min = Math.floor(Math.min(...values) / 5) * 5;
+  const max = Math.ceil(Math.max(...values) / 5) * 5;
+  const stepSize = (max - min) / 10;
+
+  console.log('min:', min, 'max:', max, 'stepSize:', stepSize);
+
   myChart.data.labels = Object.keys(data);
   myChart.data.datasets = [{
-    data: Object.values(data),
+    data: values,
     borderColor: 'rgba(75, 192, 192, 1)',
     borderWidth: 1
   }];
+  myChart.options.scales.y.min = min;
+  myChart.options.scales.y.max = max;
+  myChart.options.scales.y.ticks.stepSize = stepSize;
   myChart.update();
+
 }
 
 
@@ -173,7 +193,7 @@ map.on('load', function () {
  
       // Event to update the chart when an urban area is clicked
       map.on('click', 'urban-areas-polygon', function(e) {
-        console.log("Click event triggered");  // Verify that the click event is firing
+        //console.log("Click event triggered");  // Verify that the click event is firing
         
         let cityName = e.features[0].properties.agglosName;
         console.log("Clicked on city:", cityName);  // Verify the city name
@@ -202,4 +222,24 @@ map.on('load', function () {
 });
 
 
+map.on('contextmenu', function() {
+  console.log("Right click event triggered");
+
+  // Calculate average PM 2.5 for all years and all urban areas
+  let averages = {};
+  parsedData.data.forEach(row => {
+    for (let year = 1998; year <= 2020; year++) {
+      if (!averages[year]) averages[year] = [];
+      averages[year].push(parseFloat(row[`X${year}`]) || 0);
+    }
+  });
+
+  for (let year in averages) {
+    let sum = averages[year].reduce((a, b) => a + b, 0);
+    averages[year] = sum / averages[year].length;
+  }
+
+  // Update the chart with average data
+  updateChart(Object.values(averages));
+});
 
