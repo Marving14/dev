@@ -243,3 +243,30 @@ map.on('contextmenu', function() {
   updateChart(Object.values(averages));
 });
 
+
+document.getElementById('reset-btn').addEventListener('click', function() {
+  // Reset map to initial center and zoom level
+  map.flyTo({
+    center: [0, 0],
+    zoom: 5
+  });
+
+  // Reset chart to show average of all urban areas
+  // Calculate average PM 2.5 for all years and all urban areas
+  let averages = {};
+  parsedData.data.forEach(row => {
+    for (let year = 1998; year <= 2020; year++) {
+      if (!averages[year]) averages[year] = [];
+      averages[year].push(parseFloat(row[`X${year}`]) || 0);
+    }
+  });
+
+  for (let year in averages) {
+    let sum = averages[year].reduce((a, b) => a + b, 0);
+    averages[year] = sum / averages[year].length;
+  }
+
+  // Update the chart with average data
+  updateChart(Object.values(averages));
+});
+
