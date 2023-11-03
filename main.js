@@ -92,19 +92,43 @@ map.on('zoom', function() {
 
 let parsedData; // Define parsedData outside the map.on('load') callback
 
+// Function to handle chart updates
+function handleChartUpdate(cityName) {
+  console.log("City clicked:", cityName);
+
+  // Search for the city data in the parsed CSV data
+  let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
+
+  if (cityData) {
+    // Extract PM 2.5 data for the selected city
+    let cityPMData = {};
+    for (let year = 1998; year <= 2020; year++) {
+      cityPMData[year] = parseFloat(cityData[`X${year}`]) || 0;
+    }
+    console.log("Data for chart:", cityPMData);
+
+    // Update the chart with city-specific data
+    updateChart(cityPMData, cityName);
+  } else {
+    console.log("No data found for city:", cityName);
+  }
+}
+
+
+
 map.on('load', function () {
   console.log("Map loaded.");
 
   // Initialize chart with empty data
   initializeChart();
 
-  // Fetch GeoJSON data and add to map
+  // Fetch GeoJSON data for polygons and add to map
   fetch('data/AFRICAPOLIS2020.geojson')
     .then(response => response.json())
     .then(data => {
-      console.log("GeoJSON data fetched.");
+      console.log("Polygon GeoJSON data fetched.");
 
-      // Add GeoJSON source
+      // Add GeoJSON source for polygons
       map.addSource('urban-areas', {
         'type': 'geojson',
         'data': data
@@ -125,48 +149,73 @@ map.on('load', function () {
         'maxzoom': 22
       });
 
-      // Add point layer for urban areas
-      map.addLayer({
-        'id': 'urban-areas-point',
-        'type': 'circle',
-        'source': 'urban-areas',
-        'layout': {},
-        'paint': {
-          'circle-radius': 5,
-          'circle-color': '#FF7043' // Updated circle color
-        },
-        'minzoom': 0,
-        'maxzoom': 10
-      });
+      // Fetch GeoJSON data for centroids and add to map
+      fetch('data/centroids2.geojson')
+        .then(response => response.json())
+        .then(centroidData => {
+          console.log("Centroid GeoJSON data fetched.");
 
-            
-      // Event to update the chart when an urban area is clicked
-      map.on('click', 'urban-areas-polygon', function(e) {
-        console.log("Click event triggered");
+          // Add GeoJSON source for centroids
+          map.addSource('urban-centroids', {
+            'type': 'geojson',
+            'data': centroidData
+          });
 
-        let cityName = e.features[0].properties.agglosName;
-        console.log("Clicked on city:", cityName);
+          // Add point layer for urban centroids
+          map.addLayer({
+            'id': 'urban-centroids-point',
+            'type': 'circle',
+            'source': 'urban-centroids',
+            'layout': {},
+            'paint': {
+              'circle-radius': 5,
+              'circle-color': '#FF7043' // Updated circle color
+            },
+            'minzoom': 0,
+            'maxzoom': 10
+          });
 
-        // Search for the city data in the parsed CSV data
-        let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
+          // Event to update the chart when a centroid is clicked
+          map.on('click', 'urban-centroids-point', function(e) {
+            console.log("Centroid click event triggered");
 
-        if (cityData) {
-          // Extract PM 2.5 data for the selected city
-          let cityPMData = {};
-          for (let year = 1998; year <= 2020; year++) {
-            cityPMData[year] = parseFloat(cityData[`X${year}`]) || 0;
-          }
-          console.log("Data for chart:", cityPMData);
+            let cityName = e.features[0].properties.agglosName;
+            console.log("Clicked on centroid of city:", cityName);
 
-          // Update the chart with city-specific data
-          updateChart(cityPMData, cityName);
-        } else {
-          console.log("No data found for city:", cityName);
-        }
-      });
+            // Search for the city data in the parsed CSV data
+            let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
 
+            if (cityData) {
+              // Extract PM 2.5 data for the selected city
+              let cityPMData = {};
+              for (let year = 1998; year <= 2020; year++) {
+                cityPMData[year] = parseFloat(cityData[`X${year}`]) || 0;
+              }
+              console.log("Data for chart:", cityPMData);
+
+              // Update the chart with city-specific data
+              updateChart(cityPMData, cityName);
+            } else {
+              console.log("No data found for city:", cityName);
+            }
+          });
+        })
+        .catch(error => console.error('Error loading centroid GeoJSON data:', error));
     })
-    .catch(error => console.error('Error loading GeoJSON data:', error));
+    .catch(error => console.error('Error loading polygon GeoJSON data:', error));
+
+
+  // Event to update the chart when a centroid is clicked
+  map.on('click', 'urban-centroids-point', function(e) {
+    let cityName = e.features[0].properties.agglosName;
+    handleChartUpdate(cityName);
+  });
+
+  // Event to update the chart when a polygon is clicked
+  map.on('click', 'urban-areas-polygon', function(e) {
+    let cityName = e.features[0].properties.agglosName;
+    handleChartUpdate(cityName);
+  });
 
   // Fetch and parse CSV data
   fetch('data/UrbAglo_AQdata.csv')
@@ -192,36 +241,10 @@ map.on('load', function () {
 
       // Initialize the chart with average data
       updateChart(Object.values(averages));
- 
-      // Event to update the chart when an urban area is clicked
-      map.on('click', 'urban-areas-polygon', function(e) {
-        //console.log("Click event triggered");  // Verify that the click event is firing
-        
-        let cityName = e.features[0].properties.agglosName;
-        console.log("Clicked on city:", cityName);  // Verify the city name
-        
-        // Search for the city data in the parsed CSV data
-        // Note: 'Agglomeration_Name' should match the column name in your CSV
-        let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
-        
-        if (cityData) {
-          let cityValues = [];
-          for (let year = 1998; year <= 2020; year++) {
-            cityValues.push(parseFloat(cityData[`X${year}`]) || 0);
-          }
-          console.log("Data for chart:", cityValues);  // Verify the data
-          updateChart(cityValues);
-        } else {
-          console.log("No data found for city:", cityName);  // Verify if no data was found
-        }
-      });
-
-
-      
-
     })
     .catch(error => console.error('Error loading CSV data:', error));
 });
+
 
 
 map.on('contextmenu', function() {
