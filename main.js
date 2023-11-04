@@ -145,7 +145,8 @@ map.on('load', function () {
           // Add GeoJSON source for centroids
           map.addSource('urban-centroids', {
             'type': 'geojson',
-            'data': centroidData
+            'data': centroidData,
+            'maxzoom': 23
           });
 
           // Add point layer for urban centroids
@@ -153,7 +154,7 @@ map.on('load', function () {
             'id': 'urban-centroids-point',
             'type': 'circle',
             'source': 'urban-centroids',
-            'layout': {},
+            'layout': { },
             'paint': {
               'circle-radius': 5,
               'circle-color': '#FF7043' // Updated circle color
@@ -171,7 +172,8 @@ map.on('load', function () {
         .catch(error => console.error('Error loading centroid GeoJSON data:', error));
 
       // Fetch GeoJSON data for polygons and add to map
-      fetch('data/AFRICAPOLIS2020.geojson')
+      //fetch('data/AFRICAPOLIS2020.geojson')
+      fetch('http://marvingrobles.com/data/AFRICAPOLIS2020.geojson')
         .then(response => response.json())
         .then(data => {
           console.log("Polygon GeoJSON data fetched.");
@@ -238,7 +240,6 @@ function calculateAverages(data) {
   }
   return averages;
 }
-
 
 
 
