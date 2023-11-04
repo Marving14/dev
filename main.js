@@ -122,32 +122,19 @@ map.on('load', function () {
   // Initialize chart with empty data
   initializeChart();
 
-  // Fetch GeoJSON data for polygons and add to map
-  fetch('data/AFRICAPOLIS2020.geojson')
-    .then(response => response.json())
-    .then(data => {
-      console.log("Polygon GeoJSON data fetched.");
+  // Fetch and parse CSV data first to ensure it's available for both centroids and polygons
+  fetch('data/UrbAglo_AQdata.csv')
+    .then(response => response.text())
+    .then(csvData => {
+      console.log("CSV data fetched.");
+      parsedData = Papa.parse(csvData, { header: true });
+      console.log("CSV data parsed:", parsedData.data);
 
-      // Add GeoJSON source for polygons
-      map.addSource('urban-areas', {
-        'type': 'geojson',
-        'data': data
-      });
+      // Calculate average PM 2.5 for all years and all urban areas
+      let averages = calculateAverages(parsedData.data);
 
-      // Add polygon layer for urban areas
-      map.addLayer({
-        'id': 'urban-areas-polygon',
-        'type': 'fill',
-        'source': 'urban-areas',
-        'layout': {},
-        'paint': {
-          'fill-color': '#4CAF50', // Updated fill color
-          'fill-opacity': 0.8,
-          'fill-outline-color': '#81C784' // Updated stroke color
-        },
-        'minzoom': 8,
-        'maxzoom': 22
-      });
+      // Initialize the chart with average data
+      updateChart(Object.values(averages));
 
       // Fetch GeoJSON data for centroids and add to map
       fetch('data/centroids2.geojson')
@@ -177,82 +164,68 @@ map.on('load', function () {
 
           // Event to update the chart when a centroid is clicked
           map.on('click', 'urban-centroids-point', function(e) {
-            console.log("Centroid click event triggered");
-
             let cityName = e.features[0].properties.agglosName;
-            console.log("Clicked on centroid of city:", cityName);
-
-            // Search for the city data in the parsed CSV data
-            let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
-
-            if (cityData) {
-              // Extract PM 2.5 data for the selected city
-              let cityPMData = {};
-              for (let year = 1998; year <= 2020; year++) {
-                cityPMData[year] = parseFloat(cityData[`X${year}`]) || 0;
-              }
-              console.log("Data for chart:", cityPMData);
-
-              // Update the chart with city-specific data
-              updateChart(cityPMData, cityName);
-            } else {
-              console.log("No data found for city:", cityName);
-            }
+            handleChartUpdate(cityName);
           });
         })
         .catch(error => console.error('Error loading centroid GeoJSON data:', error));
-    })
-    .catch(error => console.error('Error loading polygon GeoJSON data:', error));
 
+      // Fetch GeoJSON data for polygons and add to map
+      fetch('data/AFRICAPOLIS2020.geojson')
+        .then(response => response.json())
+        .then(data => {
+          console.log("Polygon GeoJSON data fetched.");
 
-  // Event to update the chart when a centroid is clicked
-  map.on('click', 'urban-centroids-point', function(e) {
-    let cityName = e.features[0].properties.agglosName;
-    handleChartUpdate(cityName);
-  });
+          // Add GeoJSON source for polygons
+          map.addSource('urban-areas', {
+            'type': 'geojson',
+            'data': data
+          });
 
-  // Event to update the chart when a polygon is clicked
-  map.on('click', 'urban-areas-polygon', function(e) {
-    let cityName = e.features[0].properties.agglosName;
-    handleChartUpdate(cityName);
-  });
+          // Add polygon layer for urban areas
+          map.addLayer({
+            'id': 'urban-areas-polygon',
+            'type': 'fill',
+            'source': 'urban-areas',
+            'layout': {},
+            'paint': {
+              'fill-color': '#4CAF50', // Updated fill color
+              'fill-opacity': 0.8,
+              'fill-outline-color': '#81C784' // Updated stroke color
+            },
+            'minzoom': 8,
+            'maxzoom': 22
+          });
 
-  // Fetch and parse CSV data
-  fetch('data/UrbAglo_AQdata.csv')
-    .then(response => response.text())
-    .then(csvData => {
-      console.log("CSV data fetched.");
-      parsedData = Papa.parse(csvData, { header: true });
-      console.log("CSV data parsed:", parsedData.data);
-
-      // Calculate average PM 2.5 for all years and all urban areas
-      let averages = {};
-      parsedData.data.forEach(row => {
-        for (let year = 1998; year <= 2020; year++) {
-          if (!averages[year]) averages[year] = [];
-          averages[year].push(parseFloat(row[`X${year}`]) || 0);
-        }
-      });
-
-      for (let year in averages) {
-        let sum = averages[year].reduce((a, b) => a + b, 0);
-        averages[year] = sum / averages[year].length;
-      }
-
-      // Initialize the chart with average data
-      updateChart(Object.values(averages));
+          // Event to update the chart when a polygon is clicked
+          map.on('click', 'urban-areas-polygon', function(e) {
+            let cityName = e.features[0].properties.agglosName;
+            handleChartUpdate(cityName);
+          });
+        })
+        .catch(error => console.error('Error loading polygon GeoJSON data:', error));
     })
     .catch(error => console.error('Error loading CSV data:', error));
 });
 
+map.on('click', 'urban-centroids-point', function(e) {
+  if (e.features.length > 0) {
+    let cityName = e.features[0].properties.agglosName;
+    if (cityName) {
+      handleChartUpdate(cityName);
+    } else {
+      console.error('City name not found in the clicked feature:', e.features[0]);
+    }
+  } else {
+    console.error('No features found in the click event:', e);
+  }
+});
 
 
-map.on('contextmenu', function() {
-  console.log("Right click event triggered");
-
-  // Calculate average PM 2.5 for all years and all urban areas
+// Function to calculate averages
+function calculateAverages(data) {
   let averages = {};
-  parsedData.data.forEach(row => {
+  data.forEach(row => {
     for (let year = 1998; year <= 2020; year++) {
       if (!averages[year]) averages[year] = [];
       averages[year].push(parseFloat(row[`X${year}`]) || 0);
@@ -263,9 +236,32 @@ map.on('contextmenu', function() {
     let sum = averages[year].reduce((a, b) => a + b, 0);
     averages[year] = sum / averages[year].length;
   }
+  return averages;
+}
 
-  // Update the chart with average data
-  updateChart(Object.values(averages));
+
+
+
+
+map.on('contextmenu', function() {
+console.log("Right click event triggered");
+
+// Calculate average PM 2.5 for all years and all urban areas
+let averages = {};
+parsedData.data.forEach(row => {
+  for (let year = 1998; year <= 2020; year++) {
+    if (!averages[year]) averages[year] = [];
+    averages[year].push(parseFloat(row[`X${year}`]) || 0);
+  }
+});
+
+for (let year in averages) {
+  let sum = averages[year].reduce((a, b) => a + b, 0);
+  averages[year] = sum / averages[year].length;
+}
+
+// Update the chart with average data
+updateChart(Object.values(averages));
 });
 
 
