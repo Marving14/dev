@@ -1,30 +1,49 @@
-# Interactive Web Map
+**Interactive Web Map**
+**Introduction**
+This web map provides an interactive visualization of PM 2.5 air pollution trends across urban areas in Africa from 1998 to 2020. Understanding these trends is crucial for environmental analysis and policy-making. The map allows users to explore air quality data at a granular level, offering insights into the temporal dynamics of pollution within specific urban areas.
 
-This project visualizes PM 2.5 air pollution levels in urban areas from 1998 to 2020. Users can interact with the map to view specific data for each urban area.
+**Features**
+Interactive map with zoom-dependent visualization: polygons for detailed views and centroids for broader overviews.
+Dynamic line chart reflecting PM 2.5 trends over time.
+Reset functionality to return the visualization to its initial state.
+Technologies Used
+Mapbox GL JS
+Chart.js
+PapaParse
+Installation
+To set up the project environment, follow these steps:
 
-## Features
+bash
+Copy code
+# Clone the repository
+git clone https://github.com/Marving14/dev.git
 
-- Interactive map that allows users to click on urban areas to view PM 2.5 air pollution levels.
-- Line chart that updates dynamically based on the selected urban area.
-- Reset button to reset the map and chart to their default states.
+# Navigate to the project directory
+cd dev
 
-## Technologies Used
+# Open the index.html file in a web browser
+# If using VSCode, you can use the Live Server extension to serve the file
+# Otherwise, simply open the file in your preferred browser
+Configuration
+Ensure you have a valid Mapbox access token to use Mapbox GL JS. Set the token in the mapboxgl.accessToken variable within the main.js file.
 
-- Mapbox GL JS for the interactive map.
-- Chart.js for the line chart.
-- PapaParse for parsing CSV data.
+Usage
+Open the index.html file in a web browser.
+Interact with the map by clicking on urban areas to view specific PM 2.5 data.
+Use the reset button or right-click to reset the map and chart.
+Use the console to monitor zoom levels and data interactions for debugging purposes.
+For a live demo, visit Interactive Web Map Demo.
 
-## How to Use
+Contribution
+Contributions are welcome! For major changes, please open an issue first to discuss what you would like to change. Please ensure to update tests as appropriate.
 
-1. Clone the repository to your local machine.
-2. Open the `index.html` file in your web browser.
-3. Interact with the map by clicking on urban areas to view PM 2.5 air pollution levels.
-4. Click the reset button to reset the map and chart to their default states.
+Acknowledgments
+Data provided by AFRICAPOLIS and UrbAglo_AQdata.
+Map visualization powered by Mapbox GL JS.
+Charting functionality by Chart.js.
+CSV parsing by PapaParse.
+License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Demo
-
-You can view a live demo of the project [here](link-to-your-github-pages-site).
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Contact
+For questions or feedback, please reach out to [Your Name] at [Your Email].
