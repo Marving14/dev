@@ -29,10 +29,10 @@ html, body, div, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, address, c
   position: absolute;
   top: 20px;
   right: 20px;
-  max-width: 35%; /* Adjust the maximum width to your preference */
-  max-height: 38%; /* Adjust the maximum height to your preference */
-  background-color: #FFF3E0; /* Updated background color */
-  overflow: auto; /* Add scrollbars if content overflows */
+  max-width: 35%; 
+  max-height: 38%; 
+  background-color: #FFF3E0; 
+  overflow: auto; 
 }
 
 #chart-header {

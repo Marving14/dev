@@ -23,7 +23,17 @@ function initializeChart() {
       datasets: [],
     },
     options: {
+      responsive: true,
+      //maintainAspectRatio: false,
       scales: {
+        x: {
+          type: 'category', // Define the type of scale
+          labels: ['1998', '1999', '2000', '2001', '2002', '2003', '2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020'], // Define the labels for the x-axis
+          ticks: {
+            autoSkip: true,
+            maxTicksLimit: 18 // Prevent labels from being skipped
+          }
+        },
         y: {
           beginAtZero: true
         }
@@ -100,15 +110,19 @@ function handleChartUpdate(cityName) {
   let cityData = parsedData.data.find(row => row.Agglomeration_Name === cityName);
 
   if (cityData) {
-    // Extract PM 2.5 data for the selected city
-    let cityPMData = {};
+    // Extract PM 2.5 data for the selected city and remove the 'X' prefix from the years
+    let cityPMData = [];
     for (let year = 1998; year <= 2020; year++) {
-      cityPMData[year] = parseFloat(cityData[`X${year}`]) || 0;
+      let yearKey = `X${year}`;
+      cityPMData.push(parseFloat(cityData[yearKey]) || 0);
     }
     console.log("Data for chart:", cityPMData);
 
+    // Prepare the labels for the chart
+    const chartLabels = cityPMData.map((_, index) => (1998 + index).toString());
+
     // Update the chart with city-specific data
-    updateChart(cityPMData, cityName);
+    updateChart(cityPMData, cityName, chartLabels);
   } else {
     console.log("No data found for city:", cityName);
   }
@@ -173,7 +187,7 @@ map.on('load', function () {
 
       // Fetch GeoJSON data for polygons and add to map
       //fetch('data/AFRICAPOLIS2020.geojson')
-      fetch('http://marvingrobles.com/data/AFRICAPOLIS2020.geojson')
+      fetch('https://marvingrobles.com/data/AFRICAPOLIS2020.geojson')
         .then(response => response.json())
         .then(data => {
           console.log("Polygon GeoJSON data fetched.");
